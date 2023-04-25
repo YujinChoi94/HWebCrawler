@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.benmanes.caffeine.cache.AsyncCache;
-import com.hyundai.crawler.config.properties.TargetProperties;
+import com.hyundai.crawler.config.properties.CrawlProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class CrawlingServiceImplTest {
     @Mock
-    TargetProperties targetProperties;
+    CrawlProperties crawlProperties;
     @Mock
     AsyncCache asyncCache;
 
@@ -37,7 +37,7 @@ class CrawlingServiceImplTest {
         var body = "ThisIsBody1234";
 
         // when
-        when(targetProperties.getTargets()).thenReturn(targets);
+        when(crawlProperties.getTargets()).thenReturn(targets);
         when(asyncCache.get(anyString(), any(Function.class)))
             .thenReturn(CompletableFuture.completedFuture(body))
             .thenReturn(CompletableFuture.completedFuture(body));

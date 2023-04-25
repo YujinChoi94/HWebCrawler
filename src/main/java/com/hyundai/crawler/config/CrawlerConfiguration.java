@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import com.github.benmanes.caffeine.cache.AsyncCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.hyundai.crawler.config.properties.CacheProperties;
-import com.hyundai.crawler.config.properties.TargetProperties;
+import com.hyundai.crawler.config.properties.CrawlProperties;
 import com.hyundai.crawler.service.CrawlingServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,15 +14,15 @@ import org.springframework.context.annotation.Configuration;
 public class CrawlerConfiguration {
 
     @Bean
-    public CrawlingServiceImpl crawlerService(TargetProperties targetProperties,
+    public CrawlingServiceImpl crawlerService(CrawlProperties crawlProperties,
                                               AsyncCache<String, String> asyncCache) {
-        return new CrawlingServiceImpl(targetProperties, asyncCache);
+        return new CrawlingServiceImpl(crawlProperties, asyncCache);
     }
 
     @Bean
     public AsyncCache<String, String> asyncLoadingCache(CacheProperties cacheProperties) {
         return Caffeine.newBuilder()
-            .expireAfterWrite(cacheProperties.getExpiry(), TimeUnit.SECONDS)
+            .expireAfterWrite(cacheProperties.getExpiry(), TimeUnit.MILLISECONDS)
             .buildAsync();
     }
 }

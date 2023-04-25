@@ -2,11 +2,16 @@
 - Spring WebFlux
 - Java 17
 - Caffeine Cache
+- Jsoup
 
 ## 핵심 문제 해결 전략
 - 동시에 여러 사이트를 조회
   - AsyncCache를 활용
   - 캐시를 조회했을 때 비어있을 경우, AsyncCache 내부적으로 별도의 쓰레드를 통해 캐시 값을 생성하고 채운다.
+- 크롤링 타임아웃
+  - Jsoup을 통해 설정
+  - Timeout을 포함한 IOException 발생시 재시도 설정
+  - 최대 재시도 횟수, backoff 설정은 yaml 파일을 통해 관리
 - 크롤링 데이터 정렬 및 중복 제거
   - 대문자, 소문자, 숫자를 나타내는 배열을 생성
   - 문자의 아스키 코드를 인덱스로 활용  

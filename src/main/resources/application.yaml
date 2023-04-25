@@ -1,8 +1,11 @@
 cache:
   duration:
-    expiry: 5
+    expiry: 5000
 crawl:
-  timeout: 10
+  retry:
+    max: 3
+    backoff: 5000
+  timeout: 10000
   targets:
     - https://shop.hyundai.com
     - https://www.kia.com

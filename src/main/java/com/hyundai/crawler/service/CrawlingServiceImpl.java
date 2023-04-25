@@ -5,39 +5,48 @@ import java.time.Duration;
 import java.util.List;
 
 import com.github.benmanes.caffeine.cache.AsyncCache;
-import com.hyundai.crawler.config.properties.TargetProperties;
+import com.hyundai.crawler.config.properties.CrawlProperties;
 import com.hyundai.crawler.exception.CrawlingFailException;
 import com.hyundai.crawler.util.CrawlingSortHelper;
 import org.jsoup.Jsoup;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
 public class CrawlingServiceImpl implements CrawlingService {
-    private final TargetProperties targetProperties;
+
+    private final CrawlProperties crawlProperties;
     private AsyncCache<String, String> asyncCache;
 
-    public CrawlingServiceImpl(final TargetProperties targetProperties,
+    public CrawlingServiceImpl(final CrawlProperties crawlProperties,
                                AsyncCache<String, String> asyncCache) {
-        this.targetProperties = targetProperties;
+        this.crawlProperties = crawlProperties;
         this.asyncCache = asyncCache;
     }
 
     private Mono<String> asyncCrawl(final String url) {
         return Mono.fromFuture(asyncCache.get(url, this::crawlCore))
-            .timeout(Duration.ofSeconds(targetProperties.getTimeout()));
+            .retryWhen(getRetrySpec());
+    }
+
+    private RetryBackoffSpec getRetrySpec() {
+        return Retry.backoff(crawlProperties.getRetry().getMax(),
+            Duration.ofMillis(crawlProperties.getRetry().getBackoff()))
+            .filter(throwable -> throwable instanceof CrawlingFailException);
     }
 
     private String crawlCore(final String url) {
         try {
-            return Jsoup.connect(url).execute().body();
+            return Jsoup.connect(url).timeout(crawlProperties.getTimeout()).execute().body();
         } catch (IOException e) {
-            throw new CrawlingFailException(url);
+            throw new CrawlingFailException(url, e.getMessage());
         }
     }
 
     @Override
     public Mono<String> crawl() {
-        return Flux.fromIterable(targetProperties.getTargets())
+        return Flux.fromIterable(crawlProperties.getTargets())
             .flatMap(this::asyncCrawl)
             .collectList()
             .map(this::merge)
