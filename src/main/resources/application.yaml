@@ -1,0 +1,9 @@
+cache:
+  duration:
+    expiry: 5
+crawl:
+  timeout: 10
+  targets:
+    - https://shop.hyundai.com
+    - https://www.kia.com
+    - https://www.genesis.com
